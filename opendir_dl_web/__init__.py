@@ -1,8 +1,10 @@
 import math
+import json
 from flask import Flask
 from flask import request
 from flask import current_app
 from flask import render_template
+from flask import send_from_directory
 import opendir_dl
 
 class Pagination(object):
@@ -69,7 +71,7 @@ class OpendirDlWeb(Flask):
         config_filepath = kwargs.pop("config_filepath", None)
         if not config_filepath:
             config_filepath = opendir_dl.get_config_path("config.yml")
-        self.opendl_config = opendir_dl.Configuration(config_path=config_filepath)
+        self.opendirdl_config = opendir_dl.Configuration(config_path=config_filepath)
 
         # Call the superclass
         super(OpendirDlWeb, self).__init__(*args, **kwargs)
@@ -77,11 +79,57 @@ class OpendirDlWeb(Flask):
         self.debug = True
 
         # Register our routes
-        self.route("/")(self.index)
-        self.route("/results")(self.results)
+        self.route("/")(self.page_index)
+        self.route("/results")(self.page_results)
+        self.route("/static/<path:path>")(self.serve_static)
+        self.route("/api/search", methods=['POST'])(self.api_search)
 
-    def index(self):
-        return current_app.send_static_file('index.html')
+    def serve_static(self, path):
+        return send_from_directory('static', path)
+
+    def page_index(self):
+        return self.serve_static('index.html')
+
+    def page_results(self):
+        return self.serve_static('results.html')
+
+    def api_search(self):
+        results_per_page = 20
+        page = int(request.form.get('page', 1))
+        query = request.form.get('q', '')
+        # Handle user input
+        input_values = query.split(' ')
+        # Prepare the search command and execute the search
+        command_instance = WebSearchCommand()
+        command_instance.config = self.opendirdl_config
+        command_instance.flags = ["inclusive"]
+        command_instance.values = input_values
+        results = command_instance.run()
+        if len(results) > results_per_page:
+            start_index = (page - 1) * results_per_page
+            end_index = start_index + results_per_page
+            raw_results = results[start_index: end_index]
+        else:
+            raw_results = results
+        num_pages = int(math.ceil(float(len(results))/results_per_page))
+
+        # Make clean dicts out of our raw_results
+        result_list = []
+        for i in raw_results:
+            result_list.append({
+                'name': i.name,
+                'url': i.url,
+                'content_length': i.content_length,
+                'content_type': i.content_type,
+                'last_modified': str(i.last_modified)
+            })
+        return_dict = {
+            'pages': num_pages,
+            'results_per_page': results_per_page,
+            'results_total': len(results),
+            'results': result_list
+        }
+        return json.dumps(return_dict)
 
     def results(self):
         results_per_page = 20
@@ -91,7 +139,7 @@ class OpendirDlWeb(Flask):
         input_values = query.split(' ')
         # Prepare the search command and execute the search
         command_instance = WebSearchCommand()
-        command_instance.config = self.opendl_config
+        command_instance.config = self.opendirdl_config
         command_instance.flags = ["inclusive"]
         command_instance.values = input_values
         results = command_instance.run()

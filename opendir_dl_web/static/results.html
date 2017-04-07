@@ -1,6 +1,10 @@
 <html>
 	</head>
 		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/6.24.0/babel.js"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.4.2/react.js"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.4.2/react-dom.js"></script>
+		<script type="text/babel" src="/static/app.js"></script>
 	</head>
 	<body>
 		<div class="container" style="width: 50%;">
@@ -15,7 +19,6 @@
 			</form>
 
 			<hr>
-
 			<p>Showing results {{ (paginator.current_page - 1) * num_results_per_page + 1 }} through {{ (paginator.current_page - 1) * num_results_per_page + results|length}} of {{ num_total_results }} for "{{ query }}"</p>
 
 			<div style="text-align: center; margin: 20px">
@@ -30,30 +33,45 @@
 			{% endfor %}
 			</div>
 
-			{% for result in results %}
-			<div>
-				<h4><a href="{{ result.url }}">{{ result.name }}</a></h4>
-				<p>
-					<strong>Content Size:</strong> {{result.content_length}}<br>
-					<strong>Content Type:</strong> {{result.content_type}}<br>
-					<strong>Last Modified:</strong> {{result.last_modified}}
-				</p>
+			<div id="results_list">
 			</div>
-			<hr>
-			{% endfor %}
 
 			<div style="text-align: center; margin: 20px">
 			{% for button in paginator.render_list() %}
 				{% if button.type == "page" and button.number == paginator.current_page %}
-				<a class="btn btn-primary" href="/results?q={{ query }}&page={{ button.number }}" disabled>{{ button.value }}</a>
+				<a class="btn btn-primary"  style="width: 45px" href="/results?q={{ query }}&page={{ button.number }}" disabled>{{ button.value }}</a>
 				{% elif button.type == "jump" or button.type == "step" %}
 				<a class="btn btn-default" href="/results?q={{ query }}&page={{ button.number }}">{{ button.value }}</a>
 				{% else %}
-				<a class="btn btn-primary" href="/results?q={{ query }}&page={{ button.number }}">{{ button.value }}</a>
+				<a class="btn btn-primary"  style="width: 45px" href="/results?q={{ query }}&page={{ button.number }}">{{ button.value }}</a>
 				{% endif %}
 			{% endfor %}
 			</div>
 
 		</div>
+
+		<script type="text/babel">
+			function get(name){
+				 if(name=(new RegExp('[?&]'+encodeURIComponent(name)+'=([^&]*)')).exec(location.search))
+						return decodeURIComponent(name[1]);
+			}
+
+			var http = new XMLHttpRequest();
+			var url = "/api/search";
+			var params = "q="+ get('q') +"&page=" + get('page');
+			http.open("POST", url, true);
+
+			//Send the proper header information along with the request
+			http.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+
+			http.onreadystatechange = function() {//Call a function when the state changes.
+			    if(http.readyState == 4 && http.status == 200) {
+							var data = JSON.parse(http.responseText);
+							ReactDOM.render(<SearchPage data={data}/>, document.getElementById('results_list'));
+			    }
+			}
+			http.send(params);
+
+		</script>
 	</body>
 </html>

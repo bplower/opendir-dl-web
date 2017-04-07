@@ -20,9 +20,14 @@ setup(
     package_data = {
         "opendir_dl_web": [
             "static/index.html",
-            "templates/search.html"
+            "static/results.html",
+            "static/app.js"
         ]
     },
+
+    data_files = [
+        ('/var/www/opendir-dl-web/', ['examples/example_wsgi-opendir-dl-web.wsgi'])
+    ],
 
     # Details:
     url = "https://github.com/bplower/opendir-dl-web",
