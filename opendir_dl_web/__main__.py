@@ -2,9 +2,9 @@ import os
 import sys
 
 # This will take and insert the parent directory
-par_dir_list = os.path.realpath(__file__).split('/')[:-2]
-par_dir = "/" + os.path.join(*par_dir_list)
-sys.path.insert(0, par_dir)
+PAR_DIR_LIST = os.path.realpath(__file__).split('/')[:-2]
+PAR_DIR = "/" + os.path.join(*PAR_DIR_LIST)
+sys.path.insert(0, PAR_DIR)
 
 # Import the package from the path we just inserted
 import opendir_dl_web

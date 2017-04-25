@@ -14,7 +14,7 @@ class SearchResults extends React.Component {
       <div>
         {this.props.data.results.map(item => (
         <div>
-          <h4><a href="{item.url}"> {item.name} </a></h4>
+          <h4><a href={item.url}> {item.name} </a></h4>
           <p>
             <strong>Content Size:</strong> {item.content_length} <br/>
             <strong>Content Type:</strong> {item.content_type} <br/>
@@ -64,7 +64,7 @@ class Paginator extends React.Component {
     }
     var value_start_range = this.state.current_page - current_page_position + 1;
     var value_page_range = [];
-    //for i in range(value_start_range, value_start_range + num_page_buttons) {
+    // Create the direct page buttons
     for (var i = value_start_range; i < value_start_range + num_page_buttons; i++) {
       if (this.state.current_page==i) {
         value_page_range.push({classes: "active", display_value: i, uri: this.get_uri(i)});
@@ -72,7 +72,6 @@ class Paginator extends React.Component {
       else {
         value_page_range.push({classes: "", display_value: i, uri: this.get_uri(i)});
       }
-      //value_page_range.push('<a class="btn btn-primary" style="width: 45px" href="/results?q={ query }&page={i}">{i}</a>');
     }
 
     // Make step buttons if enabled
@@ -120,8 +119,6 @@ class Paginator extends React.Component {
       <div>
       <ul className="pagination">
       {this.calculate_buttons().map(button => (
-        //<a class="btn btn-primary" style="width: 45px" href="/results?q={ query }&page={button.page_num}">{button.page_num}</a>
-        // <li className={button.classes}><a style={{width: 45}} href={button.uri}>{button.display_value}</a></li>
         <li className={button.classes}><a href={button.uri}>{button.display_value}</a></li>
       ))}
       </ul>
@@ -129,18 +126,6 @@ class Paginator extends React.Component {
     );
   }
 }
-
-// <div style="text-align: center; margin: 20px">
-// {% for button in paginator.render_list() %}
-//   {% if button.type == "page" and button.number == paginator.current_page %}
-//   <a class="btn btn-primary" style="width: 45px" href="/results?q={{ query }}&page={{ button.number }}" disabled>{{ button.value }}</a>
-//   {% elif button.type == "jump" or button.type == "step" %}
-//   <a class="btn btn-default" href="/results?q={{ query }}&page={{ button.number }}">{{ button.value }}</a>
-//   {% else %}
-//   <a class="btn btn-primary" style="width: 45px" href="/results?q={{ query }}&page={{ button.number }}">{{ button.value }}</a>
-//   {% endif %}
-// {% endfor %}
-// </div>
 
 function get_param(name){
   // Retrieve the value for a variable defined by 'name'
