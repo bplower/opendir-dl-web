@@ -1,0 +1,9 @@
+
+#pagination_top, #pagination_bottom {
+  text-align: center;
+  margin: 20px;
+}
+
+a[href^="/results?"] {
+  min-width: 45px;
+}
